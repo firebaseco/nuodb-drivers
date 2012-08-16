@@ -38,6 +38,7 @@ WriteMakefile(
 			}
 		},
 		LD		=> 'g++',
+		LDDLFLAGS	=> $^O eq 'darwin' ? '-Xlinker -rpath -Xlinker '.$nuodb_libs : '',
 		CC		=> 'g++'
 	})
 );
