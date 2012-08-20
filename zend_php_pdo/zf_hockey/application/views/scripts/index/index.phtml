@@ -1,0 +1,29 @@
+<?php
+$this->title = "Hockey Players";
+$this->headTitle($this->title);
+?>
+<p><a href="<?php echo $this->url(array('controller'=>'index',
+'action'=>'add'));?>">Add new player</a></p>
+<table>
+<tr>
+	<th>Number</th>
+	<th>Name</th>
+	<th>Position</th>
+	<th>Team</th>
+	<th>&nbsp;</th>
+</tr>
+<?php foreach($this->hockey as $player) : ?>
+<tr>
+	<td><?php echo $this->escape($player->number);?></td>
+	<td><?php echo $this->escape($player->name);?></td>
+	<td><?php echo $this->escape($player->position);?></td>
+	<td><?php echo $this->escape($player->team);?></td>
+	<td>
+		<a href="<?php echo $this->url(array('controller'=>'index',
+		   'action'=>'edit', 'id'=>$player->id));?>">Edit</a>
+		<a href="<?php echo $this->url(array('controller'=>'index',
+		   'action'=>'delete', 'id'=>$player->id));?>">Delete</a>
+	</td>
+</tr>
+<?php endforeach; ?>
+</table>
