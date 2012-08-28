@@ -17,5 +17,7 @@ devenv NuoPhpPdo.sln /build Debug /project NuoPhpPdo
 devenv NuoPhpPdo.sln /build RelWithDebInfo /project NuoPhpPdo
 copy /Y Debug\*.* %PHP_INSTALL_DIR%\debug
 copy /Y RelWithDebInfo\*.* %PHP_INSTALL_DIR%
+copy /Y "C:\Program Files\NuoDB\bin\NuoRemote.dll" %PHP_INSTALL_DIR%\debug
+copy /Y "C:\Program Files\NuoDB\bin\NuoRemote.dll" %PHP_INSTALL_DIR%
 php tests\simple.php
 
