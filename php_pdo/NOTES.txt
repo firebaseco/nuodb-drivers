@@ -72,3 +72,14 @@ nmake snap > make_debug_snap.log 2>&1
 nmake install > make_debug_install.log 2>&1
 
 
+LOGGING
+-------
+
+To enable logging on the NuoDB PHP PDO driver, use the following example 
+your PHP configuration file (php.ini):
+
+  [pdo_nuodb]
+  pdo_nuodb.enable_log=1
+  pdo_nuodb.logfile_path=/tmp/nuodb_pdo.log
+
+
