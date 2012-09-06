@@ -21,8 +21,10 @@
 				<Option object_output="obj/Debug/" />
 				<Option type="3" />
 				<Option compiler="gcc" />
-				<Option parameters="tests/curr_test.php" />
-				<Option host_application="/usr/local/php-dbg/bin/php" />
+				<Option parameters="-X -k start" />
+				<Option host_application="/usr/sbin/apache2" />
+				<!Option parameters="tests/curr_test.php" / -->
+				<!Option host_application="/usr/local/php-dbg/bin/php" / -->
 				<Option createDefFile="1" />
 				<Option createStaticLib="1" />
 				<Compiler>

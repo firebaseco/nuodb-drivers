@@ -29,6 +29,29 @@
 #ifndef PHP_PDO_NUODB_INT_H
 #define PHP_PDO_NUODB_INT_H
 
+#if PHP_DEBUG && !defined(PHP_WIN32)
+#define PDO_DBG_ENABLED 1
+
+#define PDO_DBG_INF(msg) do { if (dbg_skip_trace == FALSE) pdo_nuodb_log(__LINE__, __FILE__, "info", (msg)); } while (0)
+#define PDO_DBG_ERR(msg) do { if (dbg_skip_trace == FALSE) pdo_nuodb_log(__LINE__, __FILE__, "error", (msg)); } while (0)
+#define PDO_DBG_INF_FMT(...) do { if (dbg_skip_trace == FALSE) pdo_nuodb_log_va(__LINE__, __FILE__, "info", __VA_ARGS__); } while (0)
+#define PDO_DBG_ERR_FMT(...) do { if (dbg_skip_trace == FALSE) pdo_nuodb_log_va(__LINE__, __FILE__, "error", __VA_ARGS__); } while (0)
+#define PDO_DBG_ENTER(func_name) int dbg_skip_trace = TRUE; dbg_skip_trace = !pdo_nuodb_func_enter(__LINE__, __FILE__, func_name, strlen(func_name));
+#define PDO_DBG_RETURN(value)	do { pdo_nuodb_func_leave(__LINE__, __FILE__); return (value); } while (0)
+#define PDO_DBG_VOID_RETURN	do { pdo_nuodb_func_leave(__LINE__, __FILE__); return; } while (0)
+
+#else
+#define PDO_DBG_ENABLED 0
+
+static inline void PDO_DBG_INF(char *msg) {}
+static inline void PDO_DBG_ERR(char *msg) {}
+static inline void PDO_DBG_INF_FMT(char *format, ...) {}
+static inline void PDO_DBG_ERR_FMT(char *format, ...) {}
+static inline void PDO_DBG_ENTER(char *func_name) {}
+#define PDO_DBG_RETURN(value)	return (value)
+#define PDO_DBG_VOID_RETURN		return;
+
+#endif
 
 extern pdo_driver_t pdo_nuodb_driver;
 

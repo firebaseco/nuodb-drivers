@@ -55,12 +55,14 @@ PHP_FUNCTION(confirm_pdo_nuodb_compiled);	/* For testing, remove later. */
 /*
 Declare any global variables you may need between the BEGIN
 and END macros here:
-
+*/
 ZEND_BEGIN_MODULE_GLOBALS(pdo_nuodb)
 long  global_value;
 char *global_string;
+long enable_log;
+char *logfile_path;
 ZEND_END_MODULE_GLOBALS(pdo_nuodb)
-*/
+
 
 /* In every utility function you add that needs to use variables
 in php_pdo_nuodb_globals, call TSRMLS_FETCH(); after declaring other

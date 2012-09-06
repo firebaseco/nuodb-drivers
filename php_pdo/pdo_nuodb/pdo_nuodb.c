@@ -41,9 +41,9 @@
 #include "php_pdo_nuodb_int.h"
 
 
-/* If you declare any globals in php_pdo_nuodb.h uncomment this:
+/* If you declare any globals in php_pdo_nuodb.h uncomment this: */
 ZEND_DECLARE_MODULE_GLOBALS(pdo_nuodb)
-*/
+
 
 /* True global resources - no need for thread safety here */
 static int le_pdo_nuodb;
@@ -98,32 +98,38 @@ ZEND_GET_MODULE(pdo_nuodb)
 
 /* {{{ PHP_INI
 */
-/* Remove comments and fill if you need to have entries in php.ini
+/* Remove comments and fill if you need to have entries in php.ini */
 PHP_INI_BEGIN()
-STD_PHP_INI_ENTRY("pdo_nuodb.global_value",      "42", PHP_INI_ALL, OnUpdateLong, global_value, zend_pdo_nuodb_globals, pdo_nuodb_globals)
-STD_PHP_INI_ENTRY("pdo_nuodb.global_string", "foobar", PHP_INI_ALL, OnUpdateString, global_string, zend_pdo_nuodb_globals, pdo_nuodb_globals)
+  STD_PHP_INI_ENTRY("pdo_nuodb.global_value",      "42", PHP_INI_ALL, OnUpdateLong, global_value, zend_pdo_nuodb_globals, pdo_nuodb_globals)
+  STD_PHP_INI_ENTRY("pdo_nuodb.global_string", "foobar", PHP_INI_ALL, OnUpdateString, global_string, zend_pdo_nuodb_globals, pdo_nuodb_globals)
+  STD_PHP_INI_ENTRY("pdo_nuodb.enable_log",      "0", PHP_INI_ALL, OnUpdateLong, enable_log, zend_pdo_nuodb_globals, pdo_nuodb_globals)
+  STD_PHP_INI_ENTRY("pdo_nuodb.logfile_path", "nuodb_pdo.log", PHP_INI_ALL, OnUpdateString, logfile_path, zend_pdo_nuodb_globals, pdo_nuodb_globals)
 PHP_INI_END()
-*/
+
 /* }}} */
 
 /* {{{ php_pdo_nuodb_init_globals
 */
-/* Uncomment this function if you have INI entries
+/* Uncomment this function if you have INI entries */
 static void php_pdo_nuodb_init_globals(zend_pdo_nuodb_globals *pdo_nuodb_globals)
 {
-pdo_nuodb_globals->global_value = 0;
-pdo_nuodb_globals->global_string = NULL;
+  pdo_nuodb_globals->global_value = 0;
+  pdo_nuodb_globals->global_string = NULL;
+  pdo_nuodb_globals->enable_log = 0;
+  pdo_nuodb_globals->logfile_path = NULL;
 }
-*/
+
 /* }}} */
 
 /* {{{ PHP_MINIT_FUNCTION
 */
 PHP_MINIT_FUNCTION(pdo_nuodb)
 {
-    /* If you have INI entries, uncomment these lines
+    ZEND_INIT_MODULE_GLOBALS(pdo_nuodb, php_pdo_nuodb_init_globals, NULL);
+    
+    /* If you have INI entries, uncomment these lines */
     REGISTER_INI_ENTRIES();
-    */
+   
     php_pdo_register_driver(&pdo_nuodb_driver);
     return SUCCESS;
 }
@@ -133,9 +139,9 @@ PHP_MINIT_FUNCTION(pdo_nuodb)
 */
 PHP_MSHUTDOWN_FUNCTION(pdo_nuodb)
 {
-    /* uncomment this line if you have INI entries
+    /* uncomment this line if you have INI entries */
     UNREGISTER_INI_ENTRIES();
-    */
+
     php_pdo_unregister_driver(&pdo_nuodb_driver);
     return SUCCESS;
 }
@@ -168,9 +174,9 @@ PHP_MINFO_FUNCTION(pdo_nuodb)
     php_info_print_table_header(2, "PDO Driver for NuoDB", "enabled");
     php_info_print_table_end();
 
-    /* Remove comments if you have entries in php.ini
+    /* Remove comments if you have entries in php.ini */
     DISPLAY_INI_ENTRIES();
-    */
+    
 }
 /* }}} */
 
