@@ -69,6 +69,7 @@ $db = NULL;
 echo "done\n";
 ?>
 --EXPECT--
+drop table Hockey_test
 create table Hockey_test
 Array
 (
