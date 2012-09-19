@@ -3,6 +3,10 @@
 For detailed information about this and other Node.js
 database bindings visit the [Node.js db-nuodb homepage] [homepage].
 
+## Status ##
+
+This driver is experimental; as such no claims to fitness or quality can be made. It may or may not compile, or function.
+
 ## BUILDING ##
 
 ```bash
