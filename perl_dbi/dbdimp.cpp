@@ -141,9 +141,13 @@ AV* dbd_st_fetch(SV *sth, imp_sth_t* imp_sth)
 
 	int numFields = DBIc_NUM_FIELDS(imp_sth);
 
-	if (!rs->next()) {
-		DBIc_ACTIVE_off(imp_sth);
-		return Nullav;
+	try {
+		if (!rs->next()) {
+			DBIc_ACTIVE_off(imp_sth);
+			return Nullav;
+		}
+	} catch (NuoDB::SQLException& xcp) {
+		do_error(sth, xcp.getSqlcode(), (char *) xcp.getText());
 	}
 
 	av = DBIc_DBISTATE(imp_sth)->get_fbav(imp_sth);
