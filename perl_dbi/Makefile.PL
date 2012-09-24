@@ -38,7 +38,8 @@ WriteMakefile(
 			}
 		},
 		LD		=> 'g++',
-		LDDLFLAGS	=> $^O eq 'darwin' ? '-Xlinker -rpath -Xlinker '.$nuodb_libs : '',
+		LDDLFLAGS	=> $^O eq 'darwin' ? '-arch x86_64 -bundle -undefined dynamic_lookup -L'.$nuodb_libs.' -Xlinker -rpath -Xlinker '.$nuodb_libs : '',
+		LDFLAGS		=> $^O eq 'darwin' ? '-arch x86_64 -L'.$nuodb_libs : '',
 		CC		=> 'g++'
 	})
 );
