@@ -125,7 +125,7 @@ static int nuodb_stmt_fetch(pdo_stmt_t * stmt, /* {{{ */
     pdo_nuodb_stmt * S = (pdo_nuodb_stmt *)stmt->driver_data;
     if (!stmt->executed)
     {
-        strcpy_s(stmt->error_code, 5, "HY000");
+        strcpy(stmt->error_code, "HY000");
         pdo_nuodb_db_handle_set_last_app_error(S->H, "Cannot fetch from a closed cursor");
 		return 0;
     }
@@ -159,48 +159,53 @@ static int nuodb_stmt_describe(pdo_stmt_t * stmt, int colno TSRMLS_DC) /* {{{ */
     sqlTypeNumber = pdo_nuodb_stmt_get_sql_type(S, colno);
     switch (sqlTypeNumber)
     {
-    case PDO_NUODB_SQLTYPE_BOOLEAN:
-    {
-        col->param_type = PDO_PARAM_BOOL;
-        break;
-    }
-    case PDO_NUODB_SQLTYPE_INTEGER:
-    {
-        col->maxlen = 24;
-        col->param_type = PDO_PARAM_STR;  // TODO: Is this correct?  Shouldn't it be a long?
-        break;
-    }
-    case PDO_NUODB_SQLTYPE_BIGINT:
-    {
-        col->maxlen = 24;
-        col->param_type = PDO_PARAM_STR;
-        break;
-    }
-    case PDO_NUODB_SQLTYPE_DOUBLE:
-    {
-        col->param_type = PDO_PARAM_STR;
-        break;
-    }
-    case PDO_NUODB_SQLTYPE_STRING:
-    {
-        col->param_type = PDO_PARAM_STR;
-        break;
-    }
-    case PDO_NUODB_SQLTYPE_DATE:
-    {
-        col->param_type = PDO_PARAM_INT;
-        break;
-    }
-    case PDO_NUODB_SQLTYPE_TIME:
-    {
-        col->param_type = PDO_PARAM_INT;
-        break;
-    }
-    case PDO_NUODB_SQLTYPE_TIMESTAMP:
-    {
-        col->param_type = PDO_PARAM_INT;
-        break;
-    }
+        case PDO_NUODB_SQLTYPE_BOOLEAN:
+        {
+            col->param_type = PDO_PARAM_BOOL;
+            break;
+        }
+        case PDO_NUODB_SQLTYPE_INTEGER:
+        {
+            col->maxlen = 24;
+            col->param_type = PDO_PARAM_STR;  // TODO: Is this correct?  Shouldn't it be a long?
+            break;
+        }
+        case PDO_NUODB_SQLTYPE_BIGINT:
+        {
+            col->maxlen = 24;
+            col->param_type = PDO_PARAM_STR;
+            break;
+        }
+        case PDO_NUODB_SQLTYPE_DOUBLE:
+        {
+            col->param_type = PDO_PARAM_STR;
+            break;
+        }
+        case PDO_NUODB_SQLTYPE_STRING:
+        {
+            col->param_type = PDO_PARAM_STR;
+            break;
+        }
+        case PDO_NUODB_SQLTYPE_DATE:
+        {
+            col->param_type = PDO_PARAM_INT;
+            break;
+        }
+        case PDO_NUODB_SQLTYPE_TIME:
+        {
+            col->param_type = PDO_PARAM_INT;
+            break;
+        }
+        case PDO_NUODB_SQLTYPE_TIMESTAMP:
+        {
+            col->param_type = PDO_PARAM_INT;
+            break;
+        }
+        case PDO_NUODB_SQLTYPE_BLOB:
+        {
+            col->param_type = PDO_PARAM_STR;
+            break;
+        }
     }
 
     return 1;
@@ -224,16 +229,16 @@ static int nuodb_stmt_get_col(pdo_stmt_t * stmt, int colno, char ** ptr, /* {{{ 
         }
         case PDO_NUODB_SQLTYPE_INTEGER:
         {
-			unsigned int val = pdo_nuodb_stmt_get_integer(S, colno);
+			int val = pdo_nuodb_stmt_get_integer(S, colno);
             *ptr = (char *)emalloc(CHAR_BUF_LEN);
-            *len = slprintf(*ptr, CHAR_BUF_LEN, "%ld", val);
+            *len = slprintf(*ptr, CHAR_BUF_LEN, "%d", val);
             break;
         }
         case PDO_NUODB_SQLTYPE_BIGINT:
         {
-			unsigned long val = pdo_nuodb_stmt_get_long(S, colno);
+			int64_t val = pdo_nuodb_stmt_get_long(S, colno);
             *ptr = (char *)emalloc(CHAR_BUF_LEN);
-            *len = slprintf(*ptr, CHAR_BUF_LEN, "%ld", val);
+            *len = slprintf(*ptr, CHAR_BUF_LEN, "%d", val);
             break;
         }
         case PDO_NUODB_SQLTYPE_DOUBLE:
@@ -279,6 +284,11 @@ static int nuodb_stmt_get_col(pdo_stmt_t * stmt, int colno, char ** ptr, /* {{{ 
             memmove(*ptr, &ts, *len);
             break;
         }
+        case PDO_NUODB_SQLTYPE_BLOB:
+        {
+            pdo_nuodb_stmt_get_blob(S, colno, ptr, len);
+            break;
+        }
     }
 
     return 1;
@@ -298,9 +308,9 @@ static int nuodb_stmt_param_hook(pdo_stmt_t * stmt, struct pdo_bound_param_data 
         return 1;
     }
 
-    if (!nuodb_params || param->paramno >= nuodb_params->num_params)
+    if (nuodb_params && param->paramno >= nuodb_params->num_params)
     {
-        strcpy_s(stmt->error_code, 5, "HY093");
+        strcpy(stmt->error_code, "HY093");
         pdo_nuodb_db_handle_set_last_app_error(S->H, "Invalid parameter index");
         return 0;
     }
@@ -318,7 +328,7 @@ static int nuodb_stmt_param_hook(pdo_stmt_t * stmt, struct pdo_bound_param_data 
         {
             // TODO: or by looking in the input descriptor
             // for now, just return an error
-            strcpy_s(stmt->error_code, 5, "HY000");
+            strcpy(stmt->error_code, "HY000");
             pdo_nuodb_db_handle_set_last_app_error(S->H, "Unable to determine the parameter index");
             return 0;
         }
@@ -365,6 +375,11 @@ static int nuodb_stmt_param_hook(pdo_stmt_t * stmt, struct pdo_bound_param_data 
                     nuodb_param->sqltype = PDO_NUODB_SQLTYPE_STRING;
                     break;
                 }
+                case PDO_PARAM_LOB:
+                {
+                    nuodb_param->sqltype = PDO_NUODB_SQLTYPE_BLOB;
+                    break;
+                }
             }
             break;
 
@@ -380,7 +395,7 @@ static int nuodb_stmt_param_hook(pdo_stmt_t * stmt, struct pdo_bound_param_data 
 
 			switch (nuodb_param->sqltype & ~1) {
 				case PDO_NUODB_SQLTYPE_ARRAY:
-					strcpy_s(stmt->error_code, 5, "HY000");
+					strcpy(stmt->error_code, "HY000");
 					pdo_nuodb_db_handle_set_last_app_error(S->H, "Cannot bind to array field");
 					return 0;
 
@@ -395,8 +410,12 @@ static int nuodb_stmt_param_hook(pdo_stmt_t * stmt, struct pdo_bound_param_data 
                     pdo_nuodb_stmt_set_string(S, param->paramno,  Z_STRVAL_P(param->parameter));
                     break;
 			    }
+			    case PDO_NUODB_SQLTYPE_BLOB: {
+			        pdo_nuodb_stmt_set_blob(S, param->paramno, Z_STRVAL_P(param->parameter), Z_STRLEN_P(param->parameter));
+			        break;
+			    }
 			    default: {
-					strcpy_s(stmt->error_code, 5, "HY000");
+					strcpy(stmt->error_code, "HY000");
 					pdo_nuodb_db_handle_set_last_app_error(S->H, "Cannot bind unsupported type!");
 					return 0;
 					break;
@@ -439,6 +458,7 @@ static int nuodb_stmt_param_hook(pdo_stmt_t * stmt, struct pdo_bound_param_data 
 						nuodb_param->len	 = Z_STRLEN_P(param->parameter);
 						break;
 					}
+
 				case IS_NULL:
 					/* complain if this field doesn't allow NULL values */
 					if (~nuodb_param->sqltype & 1) {
@@ -480,17 +500,28 @@ static int nuodb_stmt_param_hook(pdo_stmt_t * stmt, struct pdo_bound_param_data 
 							ZVAL_LONG(param->parameter, *(long*)value);
 							break;
 						}
+                    case PDO_PARAM_LOB:
+						if (value) {
+						    convert_to_string(param->parameter);
+							//ZVAL_LONG(param->parameter, *(long*)value);
+							ZVAL_STRINGL(param->parameter, value, value_len, 1);  // Is this correct?
+                            param->param_type = PDO_PARAM_STR;
+							break;
+						}
+
                     case PDO_PARAM_EVT_NORMALIZE:
                         if (!param->is_param) {
                             char *s = param->name;
-                            while (*s != '\0') {
+                            while (s != NULL && *s != '\0') {
                                *s = toupper(*s);
                                s++;
                             }
                         }
                         break;
-					default:
+					default: {
 						ZVAL_NULL(param->parameter);
+					}
+					break;
 				}
 				if (value && caller_frees) {
 					efree(value);
@@ -499,7 +530,7 @@ static int nuodb_stmt_param_hook(pdo_stmt_t * stmt, struct pdo_bound_param_data 
 			}
 			return 0;
 		default:
-			;
+			break;
 	}
 
     return 1;
