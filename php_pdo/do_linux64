@@ -2,7 +2,8 @@
 rm -fr CMakeCache.txt CMakeFiles php_nuodb.dir Makefile cmake_install.cmake .libs libphp_nuodb.so
 #cmake -g "Unix Makefile" -D PHP_INCLUDE=/usr/local/include/php -D NUOSQLAPI_ROOT=$HOME/nuodb/NuoSqlApi/NuoSqlApi-1.0.0-Linux .
 setenv NUODB_LIB_DIR /opt/nuodb/lib64
-cmake -DCMAKE_BUILD_TYPE=Debug -g "Unix Makefile" -D PHP_INCLUDE_DIR=$HOME/php-5.3.10.NTS.debug -D NUODB_INCLUDE_DIR=/opt/nuodb/include -D NUODB_LIB_DIR=/opt/nuodb/lib64 .
+#cmake -DCMAKE_BUILD_TYPE=Debug -g "Unix Makefile" -D PHP_INCLUDE_DIR=$HOME/php-5.3.10.NTS.debug -D NUODB_INCLUDE_DIR=/opt/nuodb/include -D NUODB_LIB_DIR=/opt/nuodb/lib64 .
+cmake -G "Eclipse CDT4 - Unix Makefiles" -D CMAKE_BUILD_TYPE=Debug -D PHP_INCLUDE_DIR=$HOME/php-5.3.10.NTS.debug -D NUODB_INCLUDE_DIR=/opt/nuodb/include -D NUODB_LIB_DIR=/opt/nuodb/lib64 .
 make
 sudo cp pdo_nuodb.so /usr/local/php-dbg/lib/php/extensions/debug-non-zts-20090626/pdo_nuodb.so
 pear run-tests tests/*.phpt
