@@ -21,10 +21,8 @@
 				<Option object_output="obj/Debug/" />
 				<Option type="3" />
 				<Option compiler="gcc" />
-				<Option parameters="-X -k start" />
-				<Option host_application="/usr/sbin/apache2" />
-				<!Option parameters="tests/curr_test.php" / -->
-				<!Option host_application="/usr/local/php-dbg/bin/php" / -->
+				<Option parameters="tests/curr_test.php" />
+				<Option host_application="/usr/local/php-dbg/bin/php" />
 				<Option createDefFile="1" />
 				<Option createStaticLib="1" />
 				<Compiler>
@@ -78,7 +76,7 @@
 		<Unit filename="php_pdo_nuodb_int.h" />
 		<Extensions>
 			<code_completion>
-				<search_path add="/home/tgates/php-5.3.10.NTS" />
+				<search_path add="/home/tgates/php-5.3.10.NTS.debug" />
 				<search_path add="/home/tgates/nuodb/nuodb_sources/nimbusdb" />
 			</code_completion>
 			<debugger />
