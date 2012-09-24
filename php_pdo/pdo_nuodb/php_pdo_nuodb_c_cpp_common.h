@@ -46,6 +46,7 @@
 #define PDO_NUODB_SQLTYPE_TIME      7
 #define PDO_NUODB_SQLTYPE_TIMESTAMP 8
 #define PDO_NUODB_SQLTYPE_ARRAY     9  // Not Yet Supported by this driver.
+#define PDO_NUODB_SQLTYPE_BLOB     10
 
 typedef struct SqlOption_t
 {
@@ -156,12 +157,13 @@ char const *pdo_nuodb_stmt_get_column_name(pdo_nuodb_stmt * S, int colno);
 int pdo_nuodb_stmt_get_sql_type(pdo_nuodb_stmt * S, int colno);
 int pdo_nuodb_stmt_set_integer(pdo_nuodb_stmt *S, int paramno, long int_val);
 int pdo_nuodb_stmt_set_string(pdo_nuodb_stmt *S, int paramno, char *str_val);
-unsigned int pdo_nuodb_stmt_get_integer(pdo_nuodb_stmt *S, int colno);
-unsigned long pdo_nuodb_stmt_get_long(pdo_nuodb_stmt *S, int colno);
+int pdo_nuodb_stmt_get_integer(pdo_nuodb_stmt *S, int colno);
+int64_t pdo_nuodb_stmt_get_long(pdo_nuodb_stmt *S, int colno);
 const char *pdo_nuodb_stmt_get_string(pdo_nuodb_stmt *S, int colno);
 unsigned long pdo_nuodb_stmt_get_date(pdo_nuodb_stmt *S, int colno);
 unsigned long pdo_nuodb_stmt_get_time(pdo_nuodb_stmt *S, int colno);
 unsigned long pdo_nuodb_stmt_get_timestamp(pdo_nuodb_stmt *S, int colno);
+void pdo_nuodb_stmt_get_blob(pdo_nuodb_stmt *S, int colno, char ** ptr, unsigned long * len);
 
 #ifdef __cplusplus
 } // end of extern "C" {
