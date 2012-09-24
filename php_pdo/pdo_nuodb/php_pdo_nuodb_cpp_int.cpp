@@ -204,7 +204,7 @@ int PdoNuoDbHandle::getLastId(const char *name)
   return last_id;
 }
 
-PdoNuoDbStatement::PdoNuoDbStatement(PdoNuoDbHandle * dbh) : _dbh(dbh), _stmt(NULL), _stmt_type(0), _rs(NULL), _rs_gen_keys(NULL)
+PdoNuoDbStatement::PdoNuoDbStatement(PdoNuoDbHandle * dbh) : _dbh(dbh), _sql(NULL), _stmt(NULL), _stmt_type(0), _rs(NULL), _rs_gen_keys(NULL)
 {
     // empty
 }
@@ -364,6 +364,8 @@ int PdoNuoDbStatement::getSqlType(size_t column)
     case NuoDB::NUOSQL_BOOLEAN:
         return PDO_NUODB_SQLTYPE_BOOLEAN;
     case NuoDB::NUOSQL_INTEGER:
+    case NuoDB::NUOSQL_SMALLINT:
+    case NuoDB::NUOSQL_TINYINT:
         return PDO_NUODB_SQLTYPE_INTEGER;
     case NuoDB::NUOSQL_BIGINT:
         return PDO_NUODB_SQLTYPE_BIGINT;
@@ -377,6 +379,9 @@ int PdoNuoDbStatement::getSqlType(size_t column)
         return PDO_NUODB_SQLTYPE_TIME;
     case NuoDB::NUOSQL_TIMESTAMP:
         return PDO_NUODB_SQLTYPE_TIMESTAMP;
+    case NuoDB::NUOSQL_BLOB:
+        return PDO_NUODB_SQLTYPE_BLOB;
+
     }
     return 0;
 }
@@ -390,7 +395,7 @@ char const * PdoNuoDbStatement::getString(size_t column)
     return _rs->getString(column+1);
 }
 
-unsigned int PdoNuoDbStatement::getInteger(size_t column)
+int PdoNuoDbStatement::getInteger(size_t column)
 {
     if (_rs == NULL)
     {
@@ -399,7 +404,7 @@ unsigned int PdoNuoDbStatement::getInteger(size_t column)
     return _rs->getInt(column+1);
 }
 
-unsigned long PdoNuoDbStatement::getLong(size_t column)
+int64_t PdoNuoDbStatement::getLong(size_t column)
 {
     if (_rs == NULL)
     {
@@ -436,6 +441,23 @@ unsigned long PdoNuoDbStatement::getDate(size_t column)
     }
     NuoDB::Date *date = _rs->getDate(column+1);
     return date->getSeconds();
+}
+
+void PdoNuoDbStatement::getBlob(size_t column, char ** ptr, unsigned long * len)
+{
+    if (_rs == NULL)
+    {
+        return;
+    }
+    NuoDB::Blob *blob = _rs->getBlob(column+1);
+    *len = blob->length();
+    if ((*len) == 0) {
+        *ptr = NULL;
+    } else {
+        *ptr = (char *)realloc((void *)*ptr, *len+1); // todo: is realloc the correct allocation to use?
+        blob->getBytes(0, *len, (unsigned char *)*ptr);
+    }
+    return;
 }
 
 size_t PdoNuoDbStatement::getNumberOfParameters()
@@ -498,6 +520,17 @@ void PdoNuoDbStatement::setString(size_t index, const char *value)
     return;
 }
 
+void PdoNuoDbStatement::setBlob(size_t index, const char *value, int len)
+{
+    if (_stmt == NULL) {
+        return;
+    }
+    NuoDB::Blob *blob = _dbh->getConnection()->createBlob();
+    if (value != NULL)
+        blob->setBytes(len, (const unsigned char *)value);
+    _stmt->setBlob(index+1, blob);
+    return;
+}
 
 // C/C++ jump functions
 
@@ -696,6 +729,7 @@ int pdo_nuodb_stmt_execute(pdo_nuodb_stmt * S, int *column_count, long *row_coun
 	pdo_nuodb_db_handle_commit(H);//    H->db->commit();
     S->exhausted = !S->cursor_open;
 
+
     return 1;
 }
 
@@ -746,13 +780,20 @@ int pdo_nuodb_stmt_set_string(pdo_nuodb_stmt *S, int paramno, char *str_val)
 	return 1;
 }
 
-unsigned int pdo_nuodb_stmt_get_integer(pdo_nuodb_stmt *S, int colno)
+int pdo_nuodb_stmt_set_blob(pdo_nuodb_stmt *S, int paramno, char *blob_val, int len)
+{
+	PdoNuoDbStatement *pdo_stmt = (PdoNuoDbStatement *) S->stmt;
+	pdo_stmt->setBlob(paramno,  blob_val, len);
+	return 1;
+}
+
+int pdo_nuodb_stmt_get_integer(pdo_nuodb_stmt *S, int colno)
 {
 	PdoNuoDbStatement *pdo_stmt = (PdoNuoDbStatement *) S->stmt;
 	return pdo_stmt->getInteger(colno);
 }
 
-unsigned long pdo_nuodb_stmt_get_long(pdo_nuodb_stmt *S, int colno)
+int64_t pdo_nuodb_stmt_get_long(pdo_nuodb_stmt *S, int colno)
 {
 	PdoNuoDbStatement *pdo_stmt = (PdoNuoDbStatement *) S->stmt;
 	return pdo_stmt->getLong(colno);
@@ -783,6 +824,12 @@ unsigned long pdo_nuodb_stmt_get_timestamp(pdo_nuodb_stmt *S, int colno)
 }
 
 
+void pdo_nuodb_stmt_get_blob(pdo_nuodb_stmt *S, int colno, char ** ptr, unsigned long * len)
+{
+    PdoNuoDbStatement *pdo_stmt = (PdoNuoDbStatement *) S->stmt;
+    pdo_stmt->getBlob(colno, ptr, len);
+    return;
+}
 
 
 } // end of extern "C"
