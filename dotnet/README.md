@@ -2,6 +2,10 @@
 
 This is the .NET database provider for [NuoDB](http://www.nuodb.com).
 
+## Status ##
+
+This driver is experimental; as such no claims to fitness or quality can be made. It may or may not compile, or function.
+
 ## License ##
 
 This software is provided under the BSD license:
