@@ -337,7 +337,7 @@ char const * PdoNuoDbStatement::getColumnName(size_t column)
     try
     {
         NuoDB::ResultSetMetaData * md = _rs->getMetaData();
-        rval = md->getColumnName(column+1);
+        rval = md->getColumnLabel(column+1);
 
     } catch (NuoDB::SQLException & e) {
         int error_code = e.getSqlcode();
