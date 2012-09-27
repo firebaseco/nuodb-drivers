@@ -43,6 +43,13 @@ make test
 sudo make install
 ```
 
+In order to test, you first need to start up NuoDB in this manner:
+
+```bash
+java -jar nuoagent.jar --broker &
+./nuodb --chorus test --password bar --dba-user cloud --dba-password user &
+```
+
 ## LICENSE ##
 
 Copyright (c) 2012, NuoDB, Inc.
