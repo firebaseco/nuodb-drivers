@@ -361,27 +361,32 @@ int PdoNuoDbStatement::getSqlType(size_t column)
     int sqlType = md->getColumnType(column+1);
     switch (sqlType)
     {
-    case NuoDB::NUOSQL_BOOLEAN:
-        return PDO_NUODB_SQLTYPE_BOOLEAN;
-    case NuoDB::NUOSQL_INTEGER:
-    case NuoDB::NUOSQL_SMALLINT:
-    case NuoDB::NUOSQL_TINYINT:
-        return PDO_NUODB_SQLTYPE_INTEGER;
-    case NuoDB::NUOSQL_BIGINT:
-        return PDO_NUODB_SQLTYPE_BIGINT;
-    case NuoDB::NUOSQL_DOUBLE:
-        return PDO_NUODB_SQLTYPE_DOUBLE;
-    case NuoDB::NUOSQL_VARCHAR:
-        return PDO_NUODB_SQLTYPE_STRING;
-    case NuoDB::NUOSQL_DATE:
-        return PDO_NUODB_SQLTYPE_DATE;
-    case NuoDB::NUOSQL_TIME:
-        return PDO_NUODB_SQLTYPE_TIME;
-    case NuoDB::NUOSQL_TIMESTAMP:
-        return PDO_NUODB_SQLTYPE_TIMESTAMP;
-    case NuoDB::NUOSQL_BLOB:
-        return PDO_NUODB_SQLTYPE_BLOB;
-
+        case NuoDB::NUOSQL_BOOLEAN:
+            return PDO_NUODB_SQLTYPE_BOOLEAN;
+        case NuoDB::NUOSQL_INTEGER:
+        case NuoDB::NUOSQL_SMALLINT:
+        case NuoDB::NUOSQL_TINYINT:
+            return PDO_NUODB_SQLTYPE_INTEGER;
+        case NuoDB::NUOSQL_BIGINT:
+            return PDO_NUODB_SQLTYPE_BIGINT;
+        case NuoDB::NUOSQL_DOUBLE:
+            return PDO_NUODB_SQLTYPE_DOUBLE;
+        case NuoDB::NUOSQL_VARCHAR:
+            return PDO_NUODB_SQLTYPE_STRING;
+        case NuoDB::NUOSQL_DATE:
+            return PDO_NUODB_SQLTYPE_DATE;
+        case NuoDB::NUOSQL_TIME:
+            return PDO_NUODB_SQLTYPE_TIME;
+        case NuoDB::NUOSQL_TIMESTAMP:
+            return PDO_NUODB_SQLTYPE_TIMESTAMP;
+        case NuoDB::NUOSQL_BLOB:
+            return PDO_NUODB_SQLTYPE_BLOB;
+        case NuoDB::NUOSQL_CLOB:
+            return PDO_NUODB_SQLTYPE_CLOB;
+        default: {
+            // TODO: Unknown/Unsupported type -- write to log here.
+            break;
+        }
     }
     return 0;
 }
@@ -460,6 +465,23 @@ void PdoNuoDbStatement::getBlob(size_t column, char ** ptr, unsigned long * len)
     return;
 }
 
+void PdoNuoDbStatement::getClob(size_t column, char ** ptr, unsigned long * len)
+{
+    if (_rs == NULL)
+    {
+        return;
+    }
+    NuoDB::Clob *clob = _rs->getClob(column+1);
+    *len = clob->length();
+    if ((*len) == 0) {
+        *ptr = NULL;
+    } else {
+        *ptr = (char *)realloc((void *)*ptr, *len+1); // todo: is realloc the correct allocation to use?
+        clob->getChars(0, *len, (char *)*ptr);
+    }
+    return;
+}
+
 size_t PdoNuoDbStatement::getNumberOfParameters()
 {
     if (_stmt == NULL) {
@@ -529,6 +551,18 @@ void PdoNuoDbStatement::setBlob(size_t index, const char *value, int len)
     if (value != NULL)
         blob->setBytes(len, (const unsigned char *)value);
     _stmt->setBlob(index+1, blob);
+    return;
+}
+
+void PdoNuoDbStatement::setClob(size_t index, const char *value, int len)
+{
+    if (_stmt == NULL) {
+        return;
+    }
+    NuoDB::Clob *clob = _dbh->getConnection()->createClob();
+    if (value != NULL)
+        clob->setChars(len, (const char *)value);
+    _stmt->setClob(index+1, clob);
     return;
 }
 
@@ -787,6 +821,13 @@ int pdo_nuodb_stmt_set_blob(pdo_nuodb_stmt *S, int paramno, char *blob_val, int 
 	return 1;
 }
 
+int pdo_nuodb_stmt_set_clob(pdo_nuodb_stmt *S, int paramno, char *clob_val, int len)
+{
+	PdoNuoDbStatement *pdo_stmt = (PdoNuoDbStatement *) S->stmt;
+	pdo_stmt->setClob(paramno,  clob_val, len);
+	return 1;
+}
+
 int pdo_nuodb_stmt_get_integer(pdo_nuodb_stmt *S, int colno)
 {
 	PdoNuoDbStatement *pdo_stmt = (PdoNuoDbStatement *) S->stmt;
@@ -831,5 +872,11 @@ void pdo_nuodb_stmt_get_blob(pdo_nuodb_stmt *S, int colno, char ** ptr, unsigned
     return;
 }
 
+void pdo_nuodb_stmt_get_clob(pdo_nuodb_stmt *S, int colno, char ** ptr, unsigned long * len)
+{
+    PdoNuoDbStatement *pdo_stmt = (PdoNuoDbStatement *) S->stmt;
+    pdo_stmt->getClob(colno, ptr, len);
+    return;
+}
 
 } // end of extern "C"

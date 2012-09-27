@@ -47,6 +47,7 @@
 #define PDO_NUODB_SQLTYPE_TIMESTAMP 8
 #define PDO_NUODB_SQLTYPE_ARRAY     9  // Not Yet Supported by this driver.
 #define PDO_NUODB_SQLTYPE_BLOB     10
+#define PDO_NUODB_SQLTYPE_CLOB     11
 
 typedef struct SqlOption_t
 {
@@ -164,6 +165,7 @@ unsigned long pdo_nuodb_stmt_get_date(pdo_nuodb_stmt *S, int colno);
 unsigned long pdo_nuodb_stmt_get_time(pdo_nuodb_stmt *S, int colno);
 unsigned long pdo_nuodb_stmt_get_timestamp(pdo_nuodb_stmt *S, int colno);
 void pdo_nuodb_stmt_get_blob(pdo_nuodb_stmt *S, int colno, char ** ptr, unsigned long * len);
+void pdo_nuodb_stmt_get_clob(pdo_nuodb_stmt *S, int colno, char ** ptr, unsigned long * len);
 
 #ifdef __cplusplus
 } // end of extern "C" {

@@ -206,6 +206,16 @@ static int nuodb_stmt_describe(pdo_stmt_t * stmt, int colno TSRMLS_DC) /* {{{ */
             col->param_type = PDO_PARAM_STR;
             break;
         }
+        case PDO_NUODB_SQLTYPE_CLOB:
+        {
+            col->param_type = PDO_PARAM_STR;
+            break;
+        }
+        default:
+        {
+            // TODO: unknown/unsupported type --- write to log here!
+            break;
+        }
     }
 
     return 1;
@@ -287,6 +297,16 @@ static int nuodb_stmt_get_col(pdo_stmt_t * stmt, int colno, char ** ptr, /* {{{ 
         case PDO_NUODB_SQLTYPE_BLOB:
         {
             pdo_nuodb_stmt_get_blob(S, colno, ptr, len);
+            break;
+        }
+        case PDO_NUODB_SQLTYPE_CLOB:
+        {
+            pdo_nuodb_stmt_get_clob(S, colno, ptr, len);
+            break;
+        }
+        default:
+        {
+            // TODO: unknown/unsupported type -- write to log here.
             break;
         }
     }
@@ -412,6 +432,10 @@ static int nuodb_stmt_param_hook(pdo_stmt_t * stmt, struct pdo_bound_param_data 
 			    }
 			    case PDO_NUODB_SQLTYPE_BLOB: {
 			        pdo_nuodb_stmt_set_blob(S, param->paramno, Z_STRVAL_P(param->parameter), Z_STRLEN_P(param->parameter));
+			        break;
+			    }
+			    case PDO_NUODB_SQLTYPE_CLOB: {
+			        pdo_nuodb_stmt_set_clob(S, param->paramno, Z_STRVAL_P(param->parameter), Z_STRLEN_P(param->parameter));
 			        break;
 			    }
 			    default: {

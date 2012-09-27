@@ -87,12 +87,14 @@ public:
     unsigned long getDate(size_t column);
     unsigned long getTime(size_t column);
     void getBlob(size_t column, char ** ptr, unsigned long * len);
+    void getClob(size_t column, char ** ptr, unsigned long * len);
     size_t getNumberOfParameters();
     int getGeneratedKeyLastId(const char *name);
 
     void setInteger(size_t index, int value);
     void setString(size_t index, const char *value);
     void setBlob(size_t index, const char *value, int len);
+    void setClob(size_t index, const char *value, int len);
 };
 
 #endif	/* PHP_PDO_NUODB_INT_CPP_H */
