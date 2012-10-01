@@ -243,10 +243,11 @@ NuoDB::PreparedStatement * PdoNuoDbStatement::createStatement(char const * sql)
     }
 
     char up_sql[7];
-    int i;
-    for (i=0; i<6; i++) {
+    int i, j;
+    for (i=0,j=0; i<6; i++,j++) {
+        while(isspace(sql[j])) j++;
         if (sql[i] == '\0') break;
-        up_sql[i] = toupper(sql[i]);
+        up_sql[i] = toupper(sql[j]);
     }
     for (; i<7; i++) up_sql[i] = '\0';
     if (strncmp(up_sql, "SELECT", 6) == 0) _stmt_type = 1;
@@ -384,7 +385,7 @@ int PdoNuoDbStatement::getSqlType(size_t column)
         case NuoDB::NUOSQL_CLOB:
             return PDO_NUODB_SQLTYPE_CLOB;
         default: {
-            // TODO: Unknown/Unsupported type -- write to log here.
+  	    PDO_DBG_ERR_FMT("unknown/unsupported type: %d", sqlType);
             break;
         }
     }
