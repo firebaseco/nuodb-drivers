@@ -449,8 +449,9 @@ static int nuodb_alloc_prepare_stmt(pdo_dbh_t * dbh, const char * sql, long sql_
     }
 
     /* prepare the statement */
-	*s = pdo_nuodb_db_handle_create_statement(H, new_sql);
-	if (*s == NULL)
+    *s = pdo_nuodb_db_handle_create_statement(H, new_sql);
+    PDO_DBG_INF_FMT("S=%ld", *s);
+    if (*s == NULL)
     {
         RECORD_ERROR(dbh);
         efree(new_sql);
@@ -481,6 +482,7 @@ static char *nuodb_handle_last_id(pdo_dbh_t *dbh, const char *name, unsigned int
 /* called by PDO to set a driver-specific dbh attribute */
 static int nuodb_handle_set_attribute(pdo_dbh_t * dbh, long attr, zval * val TSRMLS_DC) /* {{{ */
 {
+    PDO_DBG_ENTER("nuodb_handle_set_attribute");
     pdo_nuodb_db_handle * H = (pdo_nuodb_db_handle *)dbh->driver_data;
 
     switch (attr)
@@ -499,7 +501,7 @@ static int nuodb_handle_set_attribute(pdo_dbh_t * dbh, long attr, zval * val TSR
                     we won't know what to do with it */
                     H->last_app_error = "Cannot enable auto-commit while a transaction is already open";
                     RECORD_ERROR(dbh);
-                    return 0;
+                    PDO_DBG_RETURN(0);
                 }
                 else
                 {
@@ -513,16 +515,18 @@ static int nuodb_handle_set_attribute(pdo_dbh_t * dbh, long attr, zval * val TSR
             }
             dbh->auto_commit = Z_BVAL_P(val);
         }
-        return 1;
+        PDO_DBG_RETURN(1);
 
     case PDO_ATTR_FETCH_TABLE_NAMES:
         convert_to_boolean(val);
         H->fetch_table_names = Z_BVAL_P(val);
-        return 1;
-
+        PDO_DBG_RETURN(1);
+    default:
+	PDO_DBG_ERR_FMT("unknown/unsupported attribute: %d", attr);
+	break;
     }
     RECORD_ERROR(dbh);
-    return 0;
+    PDO_DBG_RETURN(0);
 }
 /* }}} */
 
