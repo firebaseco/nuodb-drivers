@@ -49,6 +49,16 @@
 #define PDO_NUODB_SQLTYPE_BLOB     10
 #define PDO_NUODB_SQLTYPE_CLOB     11
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+void pdo_nuodb_log(int lineno, const char *file, const char *log_level, const char *log_msg);
+void pdo_nuodb_log_va(int lineno, const char *file, const char *log_level, char *format, ...);
+int pdo_nuodb_func_enter(int lineno, const char *file, const char *func_name, int func_name_len);
+void pdo_nuodb_func_leave(int lineno, const char *file);
+#ifdef __cplusplus
+}
+#endif
 
 #if PHP_DEBUG && !defined(PHP_WIN32)
 #define PDO_DBG_ENABLED 1

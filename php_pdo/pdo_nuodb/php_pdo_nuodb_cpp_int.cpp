@@ -35,6 +35,10 @@
 #include <cstring>
 #include <cctype>
 
+#define PHP_DEBUG 1
+#define TRUE 1
+#define FALSE 0
+
 #include "php_pdo_nuodb_c_cpp_common.h"
 #include "php_pdo_nuodb_cpp_int.h"
 
@@ -146,6 +150,7 @@ NuoDB::Connection * PdoNuoDbHandle::createConnection()
                                      1,
                                      (const char *)_opts->array[3].option,
                                      (const char *)_opts->array[3].extra);
+
     //TODO add properties
     return _con;
 }
@@ -180,20 +185,24 @@ void PdoNuoDbHandle::closeConnection()
 
 void PdoNuoDbHandle::commit()
 {
+    PDO_DBG_ENTER("PdoNuoDbHandle::commit");
     if (_con == NULL)
     {
-        return;
+        PDO_DBG_VOID_RETURN;
     }
     _con->commit();
+    PDO_DBG_VOID_RETURN;
 }
 
 void PdoNuoDbHandle::rollback()
 {
+    PDO_DBG_ENTER("PdoNuoDbHandle::rollback");
     if (_con == NULL)
     {
-        return;
+        PDO_DBG_VOID_RETURN;
     }
     _con->rollback();
+    PDO_DBG_VOID_RETURN;
 }
 
 int PdoNuoDbHandle::getLastId(const char *name)
@@ -274,12 +283,15 @@ NuoDB::PreparedStatement * PdoNuoDbStatement::createStatement(char const * sql)
 
 void PdoNuoDbStatement::execute()
 {
+    PDO_DBG_ENTER("PdoNuoDbHandle::execute");
     if (_stmt == NULL)
     {
-        return;
+        PDO_DBG_VOID_RETURN;
     }
     if (_stmt_type == 1) {
+ //   _dbh->getConnection()->setAutoCommit(false);
         _rs = _stmt->executeQuery();
+ //   _dbh->getConnection()->setAutoCommit(true);
     } else if (_stmt_type == 2 || _stmt_type == 3) {
         int update_count = _stmt->executeUpdate();
 	if (_stmt_type == 3) {
@@ -288,6 +300,7 @@ void PdoNuoDbStatement::execute()
     } else {
         _stmt->execute();
     }
+    PDO_DBG_VOID_RETURN;
 }
 
 void PdoNuoDbStatement::executeQuery()
@@ -354,9 +367,10 @@ char const * PdoNuoDbStatement::getColumnName(size_t column)
 
 int PdoNuoDbStatement::getSqlType(size_t column)
 {
+    PDO_DBG_ENTER("PdoNuoDbStatement::getSqlType");
     if (_rs == NULL)
     {
-        return 0;
+        PDO_DBG_RETURN(0);
     }
     NuoDB::ResultSetMetaData * md = _rs->getMetaData();
     int sqlType = md->getColumnType(column+1);
@@ -389,7 +403,7 @@ int PdoNuoDbStatement::getSqlType(size_t column)
             break;
         }
     }
-    return 0;
+    PDO_DBG_RETURN(0);
 }
 
 char const * PdoNuoDbStatement::getString(size_t column)
@@ -759,11 +773,7 @@ int pdo_nuodb_stmt_execute(pdo_nuodb_stmt * S, int *column_count, long *row_coun
     }
     *row_count = affected_rows;
 
-    // TODO: commit here?
-
-	pdo_nuodb_db_handle_commit(H);//    H->db->commit();
     S->exhausted = !S->cursor_open;
-
 
     return 1;
 }
