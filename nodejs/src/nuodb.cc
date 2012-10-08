@@ -27,7 +27,7 @@
  ****************************************************************************/
 
 #include "./nuodb.h"
-#include "./connection.h"
+#include "./node_nuo_connection.h"
 #include "./query.h"
 
 v8::Persistent<v8::FunctionTemplate> node_db_nuodb::NuoDB::constructorTemplate;
@@ -80,6 +80,7 @@ v8::Handle<v8::Value> node_db_nuodb::NuoDB::New(const v8::Arguments& args) {
 
 v8::Handle<v8::Value> node_db_nuodb::NuoDB::set(const v8::Local<v8::Object> options) {
     ARG_CHECK_OBJECT_ATTR_OPTIONAL_STRING(options, hostname);
+    ARG_CHECK_OBJECT_ATTR_OPTIONAL_STRING(options, schema);
     ARG_CHECK_OBJECT_ATTR_OPTIONAL_STRING(options, user);
     ARG_CHECK_OBJECT_ATTR_OPTIONAL_STRING(options, password);
     ARG_CHECK_OBJECT_ATTR_OPTIONAL_STRING(options, database);
@@ -91,6 +92,7 @@ v8::Handle<v8::Value> node_db_nuodb::NuoDB::set(const v8::Local<v8::Object> opti
     v8::String::Utf8Value user(options->Get(user_key)->ToString());
     v8::String::Utf8Value password(options->Get(password_key)->ToString());
     v8::String::Utf8Value database(options->Get(database_key)->ToString());
+    v8::String::Utf8Value schema(options->Get(schema_key)->ToString());
 
     if (options->Has(hostname_key)) {
         connection->setHostname(*hostname);
@@ -106,6 +108,10 @@ v8::Handle<v8::Value> node_db_nuodb::NuoDB::set(const v8::Local<v8::Object> opti
 
     if (options->Has(database_key)) {
         connection->setDatabase(*database);
+    }
+
+    if (options->Has(schema_key)) {
+        connection->setSchema(*schema);
     }
 
     if (options->Has(port_key)) {

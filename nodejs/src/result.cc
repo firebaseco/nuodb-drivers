@@ -28,25 +28,25 @@
 
 #include "./result.h"
 
-#include "nuodb/sqlapi/SqlDate.h"
+#include "SqlDate.h"
+#include <iostream>
+#include "Statement.h"
 
-node_db_nuodb::Result::Column::Column(nuodb::sqlapi::SqlColumnMetaData * metaData)
-    : name(metaData->getColumnName()), type(STRING), binary(false) {
+node_db_nuodb::Result::Column::Column(NuoDB::ResultSetMetaData * metaData, int columnIndex)
+    : name(metaData->getColumnName(columnIndex)), type(STRING), binary(false) {
 
-    using namespace nuodb::sqlapi;
-    switch (metaData->getType()) {
-        case SQL_DOUBLE:
+    switch (metaData->getColumnType(columnIndex)) {
+        case NuoDB::NUOSQL_DOUBLE:
             this->type = NUMBER;
             break;
-        case SQL_INTEGER:
+        case NuoDB::NUOSQL_INTEGER:
             this->type = INT;
             break;
-        case SQL_DATE:
-        case SQL_TIME:
-        case SQL_DATETIME:
+        case NuoDB::NUOSQL_TIME:
+        case NuoDB::NUOSQL_DATE:
             this->type = DATETIME;
             break;
-        case SQL_STRING:
+        case NuoDB::NUOSQL_VARCHAR:
         default:
             this->type = STRING;
             break;
@@ -68,21 +68,21 @@ node_db::Result::Column::type_t node_db_nuodb::Result::Column::getType() const {
     return this->type;
 }
 
-node_db_nuodb::Result::Result(nuodb::sqlapi::SqlResultSet * results) throw(node_db::Exception&)
+node_db_nuodb::Result::Result(NuoDB::ResultSet * results, NuoDB::Statement * statement) throw(node_db::Exception&)
     : columns(NULL),
     totalColumns(0),
     rowNumber(0),
     empty(true),
     resultSet(results),
+    statement(statement),
     previousColumnLengths(NULL),
     previousRow(NULL),
     nextColumnLengths(NULL),
     nextRow(NULL) {
-
-    using namespace nuodb::sqlapi;
+    NuoDB::ResultSetMetaData* metaData = results->getMetaData();
     try {
         this->empty = false;
-        this->totalColumns = resultSet->getColumnCount();
+        this->totalColumns = metaData->getColumnCount();
 
         this->previousColumnLengths = new unsigned long[this->totalColumns];
         if (this->previousColumnLengths == NULL) {
@@ -100,13 +100,11 @@ node_db_nuodb::Result::Result(nuodb::sqlapi::SqlResultSet * results) throw(node_
         }
 
         for (uint16_t i = 0; i < this->totalColumns; i++) {
-            SqlColumnMetaData * metaData = this->resultSet->getMetaData(i);
-            this->columns[i] = new Column(metaData);
+            this->columns[i] = new Column(metaData, i + 1);
             if (this->columns[i] == NULL) {
                 this->totalColumns = i;
                 throw node_db::Exception("Could not allocate storage for column");
             }
-            delete metaData;
         }
 
         this->nextRow = this->row(this->nextColumnLengths);
@@ -143,7 +141,7 @@ void node_db_nuodb::Result::free() throw() {
 }
 
 void node_db_nuodb::Result::release() throw() {
-    delete this->resultSet;
+    //TODO: Clean statement and resultSet properly
 }
 
 void node_db_nuodb::Result::freeRow(char** row) throw() {
@@ -204,8 +202,9 @@ char** node_db_nuodb::Result::row(unsigned long* rowColumnLengths) throw(node_db
 
         for (c=0; c < this->totalColumns; c++) {
             std::string string;
-            if (this->columns[c]->getType() == Column::DATETIME) {
-                nuodb::sqlapi::SqlDate const * date = this->resultSet->getDate(c + 1);
+            //TODO: Parse Dates
+            /*if (this->columns[c]->getType() == Column::DATETIME) {
+                NuoDB::SqlDate * date = this->resultSet->getDate(c + 1);
                 if (date == NULL) {
                     rowColumnLengths[c] = 0;
                     row[c] = NULL;
@@ -219,9 +218,9 @@ char** node_db_nuodb::Result::row(unsigned long* rowColumnLengths) throw(node_db
                 strftime(buffer, 80, "%Y-%m-%d %H:%M:%S", time);
 
                 string = buffer;
-            } else {
+            } else {*/
                 string = this->resultSet->getString(c + 1);
-            }
+            //}
 
             rowColumnLengths[c] = string.length();
             row[c] = new char[rowColumnLengths[c]];

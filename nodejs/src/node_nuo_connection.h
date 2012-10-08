@@ -1,5 +1,4 @@
-#ifndef NODE_DB_NUODB_CONNECTION_H_
-#define NODE_DB_NUODB_CONNECTION_H_
+#pragma once
 
 /****************************************************************************
  * Copyright (c) 2012, NuoDB, Inc.
@@ -29,11 +28,9 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  ****************************************************************************/
 
+#include "Connection.h"
 #include <string>
-#include <sstream>
 #include "./node-db/connection.h"
-
-#include "nuodb/sqlapi/SqlConnection.h"
 
 namespace node_db_nuodb {
     class Connection : public node_db::Connection {
@@ -46,9 +43,10 @@ namespace node_db_nuodb {
             std::string escape(const std::string& string) const throw(node_db::Exception&);
             std::string version() const;
             node_db::Result* query(const std::string& query) const throw(node_db::Exception&);
+            virtual std::string getSchema() const;
+            virtual void setSchema(const std::string& schema);
         private:
             uintptr_t handle;
+            std::string schema;
     };
 }
-
-#endif  /* NODE_DB_NUODB_CONNECTION_H_ */
