@@ -36,15 +36,15 @@
 #include "./node-db/exception.h"
 #include "./node-db/result.h"
 
-#include "nuodb/sqlapi/SqlResultSet.h"
-#include "nuodb/sqlapi/SqlColumnMetaData.h"
+#include "ResultSet.h"
+#include "ResultSetMetaData.h"
 
 namespace node_db_nuodb {
 class Result : public node_db::Result {
     public:
         class Column : public node_db::Result::Column {
             public:
-                explicit Column(nuodb::sqlapi::SqlColumnMetaData * metaData);
+                explicit Column(NuoDB::ResultSetMetaData* metaData, int columnIndex);
                 ~Column();
                 bool isBinary() const;
                 std::string getName() const;
@@ -56,7 +56,7 @@ class Result : public node_db::Result {
                 bool binary;
         };
 
-        explicit Result(nuodb::sqlapi::SqlResultSet * results) throw(node_db::Exception&);
+        explicit Result(NuoDB::ResultSet * results) throw(node_db::Exception&);
         ~Result();
         void release() throw();
         bool hasNext() const throw();
@@ -81,7 +81,7 @@ class Result : public node_db::Result {
         void free() throw();
 
     private:
-        nuodb::sqlapi::SqlResultSet * resultSet;
+        NuoDB::ResultSet * resultSet;
         unsigned long* previousColumnLengths;
         char** previousRow;
         unsigned long* nextColumnLengths;

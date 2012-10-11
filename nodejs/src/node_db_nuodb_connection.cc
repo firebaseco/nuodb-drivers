@@ -27,15 +27,9 @@
  ****************************************************************************/
 
 #include <sstream>
-
-#include "./connection.h"
-#include "./result.h"
-
-#include "nuodb/stdint.h"
-#include "nuodb/sqlapi/SqlExceptions.h"
-#include "nuodb/sqlapi/SqlEnvironment.h"
-#include "nuodb/sqlapi/SqlStatement.h"
-#include "nuodb/sqlapi/SqlDatabaseMetaData.h"
+#include <iostream>
+#include "./node_db_nuodb_connection.h"
+#include "./node_db_nuodb_result.h"
 
 node_db_nuodb::Connection::Connection()
     : handle(0) {
@@ -44,15 +38,16 @@ node_db_nuodb::Connection::Connection()
     this->quoteName = '"';
 }
 
-class ConnectionHandle {
-public:
-    ConnectionHandle(nuodb::sqlapi::SqlEnvironment * environment, nuodb::sqlapi::SqlConnection * connection) : environment(environment), connection(connection) {}
-    nuodb::sqlapi::SqlEnvironment * environment;
-    nuodb::sqlapi::SqlConnection * connection;
-};
-
 node_db_nuodb::Connection::~Connection() {
     this->close();
+}
+
+std::string node_db_nuodb::Connection::getSchema() const {
+    return this->schema;
+}
+
+void node_db_nuodb::Connection::setSchema(const std::string& schema) {
+    this->schema = schema;
 }
 
 bool node_db_nuodb::Connection::isAlive(bool ping) throw() {
@@ -63,37 +58,27 @@ bool node_db_nuodb::Connection::isAlive(bool ping) throw() {
 
 void node_db_nuodb::Connection::open() throw(node_db::Exception&) {
     this->close();
-
-    std::ostringstream conn_str;
-    conn_str << this->database << "@" << this->hostname << ":" << this->port;
-
     try {
-        nuodb::sqlapi::SqlOption options[3];
-        options[0].option = "database"; options[0].extra = (void*) conn_str.str().c_str();
-        options[1].option = "user"; options[1].extra = (void*) this->user.c_str();
-        options[2].option = "password"; options[2].extra = (void*) this->password.c_str();
+        NuoDB::Connection * connection = NuoDB::Connection::create();
+        NuoDB::Properties * props = connection->allocProperties();
+        props->putValue("user", this->user.c_str());
+        props->putValue("password", this->password.c_str());
+        props->putValue("schema", this->schema.c_str());
+        //TODO: Missing properties: Hostname and Port
 
-        nuodb::sqlapi::SqlOptionArray optionsArray;
-        optionsArray.count = 3;
-        optionsArray.array = options;
-
-        using namespace nuodb::sqlapi;
-        SqlEnvironment * environment = SqlEnvironment::createSqlEnvironment(&optionsArray);
-        SqlConnection * connection = environment->createSqlConnection(&optionsArray);
-        handle = reinterpret_cast<uintptr_t>(new ConnectionHandle(environment, connection));
+        connection->openDatabase(this->database.c_str(), props);
+        handle = reinterpret_cast<uintptr_t>(connection);
 
         this->alive = true;
-    } catch(nuodb::sqlapi::ErrorCodeException & exception) {
-        throw node_db::Exception(exception.what());
+    } catch(NuoDB::SQLException & exception) {
+        throw node_db::Exception(exception.getText());
     }
 }
 
 void node_db_nuodb::Connection::close() {
     if (this->alive) {
-        ConnectionHandle * instance = reinterpret_cast<ConnectionHandle*>(handle);
-        delete instance->connection;
-        delete instance->environment;
-        delete instance;
+        NuoDB::Connection * connection = reinterpret_cast<NuoDB::Connection*>(handle);
+        connection->release();
         handle = 0;
     }
     this->alive = false;
@@ -104,25 +89,23 @@ std::string node_db_nuodb::Connection::escape(const std::string& string) const t
 }
 
 std::string node_db_nuodb::Connection::version() const {
-    using namespace nuodb::sqlapi;
     if (this->alive) {
-        ConnectionHandle * instance = reinterpret_cast<ConnectionHandle*>(handle);
-        SqlDatabaseMetaData * dmd = instance->connection->getMetaData();
-        char const * version = dmd->getDatabaseVersion();
-        delete dmd;
+        NuoDB::Connection * connection = reinterpret_cast<NuoDB::Connection*>(handle);
+        NuoDB::DatabaseMetaData * dmd = connection->getMetaData();
+        char const * version = dmd->getDatabaseProductVersion();
         return version;
     }
+    return NULL;
 }
 
 node_db::Result* node_db_nuodb::Connection::query(const std::string& query) const throw(node_db::Exception&) {
-    using namespace nuodb::sqlapi;
-    ConnectionHandle * instance = reinterpret_cast<ConnectionHandle*>(handle);
+    NuoDB::Connection * connection = reinterpret_cast<NuoDB::Connection*>(handle);
     try {
-        SqlStatement * statement = instance->connection->createStatement();
-        node_db_nuodb::Result * result = new node_db_nuodb::Result(statement->executeQuery(query.c_str()));
-        delete statement;
+        NuoDB::PreparedStatement * statement = connection->prepareStatement(query.c_str());
+        NuoDB::ResultSet * results = statement->executeQuery();
+        node_db_nuodb::Result * result = new node_db_nuodb::Result(results);
         return result;
-    } catch(ErrorCodeException & ex) {
-        throw node_db::Exception(ex.what());
+    } catch(NuoDB::SQLException & ex) {
+        throw node_db::Exception(ex.getText());
     }
 }

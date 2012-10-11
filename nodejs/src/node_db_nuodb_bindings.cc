@@ -1,6 +1,3 @@
-#ifndef NODE_DB_NUODB_CONNECTION_H_
-#define NODE_DB_NUODB_CONNECTION_H_
-
 /****************************************************************************
  * Copyright (c) 2012, NuoDB, Inc.
  * All rights reserved.
@@ -29,26 +26,16 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  ****************************************************************************/
 
-#include <string>
-#include <sstream>
-#include "./node-db/connection.h"
+#include "./node-db/binding.h"
+#include "./node_db_nuodb.h"
+#include "./node_db_nuodb_query.h"
 
-#include "nuodb/sqlapi/SqlConnection.h"
+extern "C" {
+    void init(v8::Handle<v8::Object> target) {
+        node_db::EventEmitter::Init();
+        node_db_nuodb::NuoDB::Init(target);
+        node_db_nuodb::Query::Init(target);
+    }
 
-namespace node_db_nuodb {
-    class Connection : public node_db::Connection {
-        public:
-            Connection();
-            ~Connection();
-            bool isAlive(bool ping) throw();
-            void open() throw(node_db::Exception&);
-            void close();
-            std::string escape(const std::string& string) const throw(node_db::Exception&);
-            std::string version() const;
-            node_db::Result* query(const std::string& query) const throw(node_db::Exception&);
-        private:
-            uintptr_t handle;
-    };
+    NODE_MODULE(nuodb_bindings, init);
 }
-
-#endif  /* NODE_DB_NUODB_CONNECTION_H_ */

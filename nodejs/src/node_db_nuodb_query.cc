@@ -26,7 +26,7 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  ****************************************************************************/
 
-#include "./query.h"
+#include "./node_db_nuodb_query.h"
 
 v8::Persistent<v8::FunctionTemplate> node_db_nuodb::Query::constructorTemplate;
 
