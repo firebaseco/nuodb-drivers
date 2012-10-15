@@ -2,6 +2,8 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<key>currentDocument</key>
+	<string>wscript</string>
 	<key>documents</key>
 	<array>
 		<dict>
@@ -10,8 +12,6 @@
 				<dict>
 					<key>filename</key>
 					<string>AUTHORS</string>
-					<key>selected</key>
-					<true/>
 				</dict>
 				<dict>
 					<key>filename</key>
@@ -25,69 +25,71 @@
 				</dict>
 				<dict>
 					<key>filename</key>
+					<string>src/node_db_nuodb.cc</string>
+					<key>lastUsed</key>
+					<date>2012-10-11T13:40:47Z</date>
+				</dict>
+				<dict>
+					<key>filename</key>
+					<string>src/node_db_nuodb.h</string>
+					<key>lastUsed</key>
+					<date>2012-10-11T13:38:43Z</date>
+				</dict>
+				<dict>
+					<key>filename</key>
+					<string>src/node_db_nuodb_bindings.cc</string>
+					<key>lastUsed</key>
+					<date>2012-10-11T13:40:46Z</date>
+				</dict>
+				<dict>
+					<key>filename</key>
+					<string>src/node_db_nuodb_connection.cc</string>
+					<key>lastUsed</key>
+					<date>2012-10-11T13:40:46Z</date>
+				</dict>
+				<dict>
+					<key>filename</key>
+					<string>src/node_db_nuodb_connection.h</string>
+					<key>lastUsed</key>
+					<date>2012-10-11T13:40:46Z</date>
+				</dict>
+				<dict>
+					<key>filename</key>
+					<string>src/node_db_nuodb_query.cc</string>
+					<key>lastUsed</key>
+					<date>2012-10-11T13:40:45Z</date>
+				</dict>
+				<dict>
+					<key>filename</key>
+					<string>src/node_db_nuodb_query.h</string>
+					<key>lastUsed</key>
+					<date>2012-10-11T13:40:45Z</date>
+				</dict>
+				<dict>
+					<key>filename</key>
+					<string>src/node_db_nuodb_result.cc</string>
+					<key>lastUsed</key>
+					<date>2012-10-11T13:42:07Z</date>
+				</dict>
+				<dict>
+					<key>filename</key>
+					<string>src/node_db_nuodb_result.h</string>
+					<key>lastUsed</key>
+					<date>2012-10-11T13:42:08Z</date>
+				</dict>
+				<dict>
+					<key>filename</key>
 					<string>wscript</string>
 					<key>lastUsed</key>
-					<date>2012-03-28T20:08:55Z</date>
+					<date>2012-10-11T13:42:10Z</date>
+					<key>selected</key>
+					<true/>
 				</dict>
 				<dict>
 					<key>filename</key>
 					<string>db-nuodb.js</string>
 					<key>lastUsed</key>
 					<date>2012-03-28T20:09:04Z</date>
-				</dict>
-				<dict>
-					<key>filename</key>
-					<string>src/nuodb_bindings.cc</string>
-					<key>lastUsed</key>
-					<date>2012-03-28T20:09:15Z</date>
-				</dict>
-				<dict>
-					<key>filename</key>
-					<string>src/nuodb.cc</string>
-					<key>lastUsed</key>
-					<date>2012-03-28T20:09:22Z</date>
-				</dict>
-				<dict>
-					<key>filename</key>
-					<string>src/nuodb.h</string>
-					<key>lastUsed</key>
-					<date>2012-03-28T20:09:41Z</date>
-				</dict>
-				<dict>
-					<key>filename</key>
-					<string>src/connection.cc</string>
-					<key>lastUsed</key>
-					<date>2012-03-28T20:09:44Z</date>
-				</dict>
-				<dict>
-					<key>filename</key>
-					<string>src/connection.h</string>
-					<key>lastUsed</key>
-					<date>2012-03-28T20:09:49Z</date>
-				</dict>
-				<dict>
-					<key>filename</key>
-					<string>src/query.cc</string>
-					<key>lastUsed</key>
-					<date>2012-03-28T20:09:53Z</date>
-				</dict>
-				<dict>
-					<key>filename</key>
-					<string>src/query.h</string>
-					<key>lastUsed</key>
-					<date>2012-03-28T20:10:06Z</date>
-				</dict>
-				<dict>
-					<key>filename</key>
-					<string>src/result.cc</string>
-					<key>lastUsed</key>
-					<date>2012-03-28T20:10:10Z</date>
-				</dict>
-				<dict>
-					<key>filename</key>
-					<string>src/result.h</string>
-					<key>lastUsed</key>
-					<date>2012-03-28T20:10:25Z</date>
 				</dict>
 			</array>
 			<key>expanded</key>
@@ -105,10 +107,29 @@
 	<key>fileHierarchyDrawerWidth</key>
 	<integer>200</integer>
 	<key>metaData</key>
-	<dict/>
+	<dict>
+		<key>wscript</key>
+		<dict>
+			<key>caret</key>
+			<dict>
+				<key>column</key>
+				<integer>197</integer>
+				<key>line</key>
+				<integer>48</integer>
+			</dict>
+			<key>firstVisibleColumn</key>
+			<integer>70</integer>
+			<key>firstVisibleLine</key>
+			<integer>12</integer>
+		</dict>
+	</dict>
+	<key>openDocuments</key>
+	<array>
+		<string>wscript</string>
+	</array>
 	<key>showFileHierarchyDrawer</key>
 	<true/>
 	<key>windowFrame</key>
-	<string>{{210, 66}, {1470, 962}}</string>
+	<string>{{210, 63}, {1710, 995}}</string>
 </dict>
 </plist>
