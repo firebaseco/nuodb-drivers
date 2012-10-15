@@ -56,7 +56,7 @@ class Result : public node_db::Result {
                 bool binary;
         };
 
-        explicit Result(NuoDB::ResultSet * results) throw(node_db::Exception&);
+        explicit Result(NuoDB::ResultSet * results, int affectedRows) throw(node_db::Exception&);
         ~Result();
         void release() throw();
         bool hasNext() const throw();
@@ -86,6 +86,7 @@ class Result : public node_db::Result {
         char** previousRow;
         unsigned long* nextColumnLengths;
         char** nextRow;
+        uint64_t affectedRows;
 
         void freeRow(char** row) throw();
 };

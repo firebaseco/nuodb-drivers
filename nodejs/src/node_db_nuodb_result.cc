@@ -69,48 +69,57 @@ node_db::Result::Column::type_t node_db_nuodb::Result::Column::getType() const {
     return this->type;
 }
 
-node_db_nuodb::Result::Result(NuoDB::ResultSet * results) throw(node_db::Exception&)
+node_db_nuodb::Result::Result(NuoDB::ResultSet * results, int affectedRows) throw(node_db::Exception&)
     : columns(NULL),
     totalColumns(0),
     rowNumber(0),
+    affectedRows(affectedRows),
     empty(true),
     resultSet(results),
     previousColumnLengths(NULL),
     previousRow(NULL),
     nextColumnLengths(NULL),
     nextRow(NULL) {
-    NuoDB::ResultSetMetaData* metaData = results->getMetaData();
-    try {
-        this->empty = false;
-        this->totalColumns = metaData->getColumnCount();
+    if(results) {
+        // if there is a NuoDB::ResultSet, the statement was performed by executeQuery, this->resultSet is available.
+        // node-db will take the result as scalar by returning affectedRecords.
+        NuoDB::ResultSetMetaData* metaData = results->getMetaData();
+        try {
+            this->empty = false;
+            this->totalColumns = metaData->getColumnCount();
 
-        this->previousColumnLengths = new unsigned long[this->totalColumns];
-        if (this->previousColumnLengths == NULL) {
-            throw node_db::Exception("Could not create buffer for column lengths");
-        }
-
-        this->nextColumnLengths = new unsigned long[this->totalColumns];
-        if (this->nextColumnLengths == NULL) {
-            throw node_db::Exception("Could not create buffer for column lengths");
-        }
-
-        this->columns = new Column*[this->totalColumns];
-        if (this->columns == NULL) {
-            throw node_db::Exception("Could not allocate storage for columns");
-        }
-
-        for (uint16_t i = 0; i < this->totalColumns; i++) {
-            this->columns[i] = new Column(metaData, i + 1);
-            if (this->columns[i] == NULL) {
-                this->totalColumns = i;
-                throw node_db::Exception("Could not allocate storage for column");
+            this->previousColumnLengths = new unsigned long[this->totalColumns];
+            if (this->previousColumnLengths == NULL) {
+                throw node_db::Exception("Could not create buffer for column lengths");
             }
-        }
 
-        this->nextRow = this->row(this->nextColumnLengths);
-    } catch(...) {
-        this->free();
-        throw;
+            this->nextColumnLengths = new unsigned long[this->totalColumns];
+            if (this->nextColumnLengths == NULL) {
+                throw node_db::Exception("Could not create buffer for column lengths");
+            }
+
+            this->columns = new Column*[this->totalColumns];
+            if (this->columns == NULL) {
+                throw node_db::Exception("Could not allocate storage for columns");
+            }
+
+            for (uint16_t i = 0; i < this->totalColumns; i++) {
+                this->columns[i] = new Column(metaData, i + 1);
+                if (this->columns[i] == NULL) {
+                    this->totalColumns = i;
+                    throw node_db::Exception("Could not allocate storage for column");
+                }
+            }
+
+            this->nextRow = this->row(this->nextColumnLengths);
+        } catch(...) {
+            this->free();
+            throw;
+        }
+    } else {
+      // if there is no result, the statement was performed by executeUpdate.
+      // affectedRows should have the count of rows affected.
+      // this->resultSet is not available in this case.
     }
 }
 
@@ -141,7 +150,10 @@ void node_db_nuodb::Result::free() throw() {
 }
 
 void node_db_nuodb::Result::release() throw() {
-    resultSet->close();
+    if(this->resultSet) {
+        //TODO: For some reason, the resultset is already deallocated when we try to release it.
+        //resultSet->close();
+    }
 }
 
 void node_db_nuodb::Result::freeRow(char** row) throw() {
@@ -260,7 +272,7 @@ node_db_nuodb::Result::Column* node_db_nuodb::Result::column(uint16_t i) const t
 }
 
 uint64_t node_db_nuodb::Result::affectedCount() const throw() {
-    return 0; // not possible without restreaming an entirely new result set across the network
+    return this->affectedRows;
 }
 
 uint64_t node_db_nuodb::Result::insertId() const throw(node_db::Exception&) {

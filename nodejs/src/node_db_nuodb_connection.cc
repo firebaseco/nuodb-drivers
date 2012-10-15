@@ -102,8 +102,17 @@ node_db::Result* node_db_nuodb::Connection::query(const std::string& query) cons
     NuoDB::Connection * connection = reinterpret_cast<NuoDB::Connection*>(handle);
     try {
         NuoDB::PreparedStatement * statement = connection->prepareStatement(query.c_str());
-        NuoDB::ResultSet * results = statement->executeQuery();
-        node_db_nuodb::Result * result = new node_db_nuodb::Result(results);
+        NuoDB::ResultSet * results = NULL;
+        int affectedRows = 0;
+        std::string select_word = "SELECT";
+        if(0 == query.compare(0, select_word.length(), select_word)) {
+          // is SELECT, we should use executeQuery
+          results = statement->executeQuery();
+        } else {
+          // is not a SELECT, we should use executeUpdate to get the count of the rows.
+          affectedRows = statement->executeUpdate();
+        }
+        node_db_nuodb::Result * result = new node_db_nuodb::Result(results, affectedRows);
         return result;
     } catch(NuoDB::SQLException & ex) {
         throw node_db::Exception(ex.getText());
